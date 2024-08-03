@@ -61,17 +61,7 @@ def main():
             st.subheader('Låneutgifter basert på oppgit renteintervall')
             st.table(styled_df)
             
-            # # Plotting using Plotly Express
-            # fig = px.bar(
-            #     df,
-            #     x='Rentesats',
-            #     y='Månedlig lånekostnad',
-            #     labels={'Rentesats': 'Rentesats (%)', 'Månedlig lånekostnad': 'Månedlig lånekostnad (NOK)'},
-            #     title='Hvor mye lånet ditt vil koste dersom renten endrer seg',
-            # )
             
-            # # Show figure
-            # st.plotly_chart(fig, use_container_width=True)
             
 if __name__ == '__main__':
     main()

@@ -10,7 +10,7 @@ import numpy as np
 
 from itertools import product
 
-def calculate_govt_support(kwh_usage, kwh_price_incl_vat_nok, govt_support_limit_nok=0.9125):
+def calculate_govt_support(kwh_usage: int|float, kwh_price_incl_vat_nok: int|float, govt_support_limit_nok: float=0.9125):
     """
     Calculate the government support for electricity usage based on usage, price, and the support limit.
 
@@ -33,7 +33,10 @@ def calculate_govt_support(kwh_usage, kwh_price_incl_vat_nok, govt_support_limit
     >>> calculate_govt_support(100, 1.5, 0.9125)
     4.725
     """
-    govt_support = (kwh_usage * (kwh_price_incl_vat_nok - govt_support_limit_nok)) * 0.9
+    if kwh_usage <= 5000:
+        govt_support = (kwh_usage * (kwh_price_incl_vat_nok - govt_support_limit_nok)) * 0.9
+    else:
+        govt_support = 0
     return govt_support
 
 def calculate_electricity_costs(

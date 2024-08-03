@@ -61,26 +61,26 @@ def main():
         # Apply the formatting
         # df.style.format(format_dict)
 
-        fig = px.area(
-            df.round(1),
-            x="kWh Usage",
-            y="Total Cost (NOK)",
-            labels={
-                "kWh Usage": "Strømforbruk (kWh)",
-                "Total Cost (NOK)": "kr/måned",
-                "kWh Price (NOK)": "Strømpris (kr/kwh)",
-            },
-            color="kWh Price (NOK)",
-            width=1200,
-            height=600,
-        ).update_layout(
-            yaxis=dict(
-                tickformat=".0f"  # transforms 6k -> 6000
-            )
-        )
+        # fig = px.area(
+        #     df.round(1),
+        #     x="kWh Usage",
+        #     y="Total Cost (NOK)",
+        #     labels={
+        #         "kWh Usage": "Strømforbruk (kWh)",
+        #         "Total Cost (NOK)": "kr/måned",
+        #         "kWh Price (NOK)": "Strømpris (kr/kwh)",
+        #     },
+        #     color="kWh Price (NOK)",
+        #     width=1200,
+        #     height=600,
+        # ).update_layout(
+        #     yaxis=dict(
+        #         tickformat=".0f"  # transforms 6k -> 6000
+        #     )
+        # )
 
-        st.subheader("Månedlige strømkostnader")
-        st.plotly_chart(fig, use_container_width=True)
+        # st.subheader("Månedlige strømkostnader")
+        # st.plotly_chart(fig, use_container_width=True)
 
 
 if __name__ == "__main__":
