@@ -1,0 +1,13 @@
+name: general-development
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.11
+  - notebook
+  - console_shortcut
+  - numpy
+  - pandas
+  - plotly
+  - streamlit
+prefix: C:\Users\bgo\anaconda3\envs\general-development
