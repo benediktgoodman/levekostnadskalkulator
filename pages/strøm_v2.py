@@ -1,6 +1,6 @@
 import streamlit as st
 import numpy as np
-import pandas as pd
+import pandas as pd  # noqa: F401
 import os
 from pathlib import Path
 
@@ -29,6 +29,7 @@ def calculate_and_update(kwh_usage_range, kwh_price_range, markup_nok, fixed_cos
     return df
 
 def main():
+    st.set_page_config(layout='centered')
     st.title("Beregning av månedlige strømkostnader")
         
     # Expanded explanation
@@ -58,13 +59,13 @@ def main():
     
     kwh_price_range = st.slider(
         "Velg intervall for spotpris (kr/kWh):",
-        min_value=0.2,
-        max_value=5.0,
+        min_value=0.1,
+        max_value=10.0,
         value=(1.0, 2.0),
         step=0.1,
         key='kwh_price_range'
     )
-    kwh_price_range = input_logic_funcs.ensure_range(kwh_price_range, 0.2, 5.0, 0.1)
+    kwh_price_range = input_logic_funcs.ensure_range(kwh_price_range, 0.1, 10.0, 0.1)
     
     markup_nok = st.number_input("Påslag per kWh (kr):", value=0.1, key='markup_nok')
     fixed_cost_nok = st.number_input("Fastprisledd (kr):", value=39, key='fixed_cost_nok')
@@ -85,15 +86,17 @@ def main():
         
         # Display heatmap
         st.plotly_chart(create_heatmap_divergent_hover(
-            st.session_state.df, 
-            x_column='kWh Price (NOK)', 
-            y_column='kWh Usage', 
-            z_column='Total Cost (NOK)',
-            title='Strømkostnader',
-            x_axis_title='Pris per kWh (NOK)',
-            y_axis_title='Strømforbruk (kWh)',
-            colorbar_title='Totalkostnad (NOK)'
-        ))
+                st.session_state.df, 
+                x_column='kWh Price (NOK)', 
+                y_column='kWh Usage', 
+                z_column='Total Cost (NOK)',
+                title='Strømkostnader',
+                x_axis_title='Pris per kWh (NOK)',
+                y_axis_title='Strømforbruk (kWh)',
+                colorbar_title='Totalkostnad (NOK)'
+            ),
+            use_container_width=False,
+            )
 
         st.write("""
         **Om strømstøtteordningen**

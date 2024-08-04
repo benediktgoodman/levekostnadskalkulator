@@ -94,8 +94,6 @@ def main():
             ownership_fraq_range=[ownership_fraq]
         )
         
-        st.write(df)
-        
         #TODO: Find some way of plotting the results
 
 if __name__ == "__main__":
