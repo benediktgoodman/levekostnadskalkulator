@@ -10,6 +10,27 @@ import numpy as np
 
 from itertools import product
 
+def calculate_amortization_schedule(loan_amount, annual_interest_rate, loan_term_months):
+    monthly_rate = annual_interest_rate / 12
+    monthly_payment = loan_amount * (monthly_rate * (1 + monthly_rate) ** loan_term_months) / ((1 + monthly_rate) ** loan_term_months - 1)
+    
+    remaining_balance = loan_amount
+    schedule = []
+    
+    for month in range(1, loan_term_months + 1):
+        interest_payment = remaining_balance * monthly_rate
+        principal_payment = monthly_payment - interest_payment
+        remaining_balance -= principal_payment
+        
+        schedule.append({
+            'Month': month,
+            'Payment': monthly_payment,
+            'Principal': principal_payment,
+            'Interest': interest_payment,
+            'Remaining Balance': remaining_balance
+        })
+    
+    return pd.DataFrame(schedule)
 def calculate_govt_support(kwh_usage: int|float, kwh_price_incl_vat_nok: int|float, govt_support_limit_nok: float=0.9125):
     """
     Calculate the government support for electricity usage based on usage, price, and the support limit.

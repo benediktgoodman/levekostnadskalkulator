@@ -8,7 +8,7 @@ from pathlib import Path
 
 # Finn rotmappe i prosjekt
 script_path = Path(os.getcwd())
-while "app.py" not in os.listdir():
+while "Boligkostnadskalkulatoren.py" not in os.listdir():
     os.chdir("../")
 from functions.calc_functions import (  # noqa: E402
     loan_calc,
@@ -17,6 +17,7 @@ from functions.calc_functions import (  # noqa: E402
 os.chdir(script_path)
 
 def main():
+    st.set_page_config(layout='centered')
     # Streamlit app layout
     st.title('Hva vil lånet ditt egentlig koste deg i måneden?')
     st.write("""
@@ -76,16 +77,6 @@ def main():
                 hovermode='x unified'
             )
             st.plotly_chart(fig_line)
-            
-            # # Create a bar chart with adjusted OrRd color scheme
-            # fig_bar = px.bar(df, x='Rentesats', y='Månedlig lånekostnad', 
-            #                  title='Månedlig lånekostnad for ulike rentesatser',
-            #                  labels={'Rentesats': 'Rentesats (%)', 
-            #                          'Månedlig lånekostnad': 'Månedlig lånekostnad (NOK)'},
-            #                  color='Rentesats',
-            #                  color_continuous_scale=custom_color_scale)
-            # fig_bar.update_layout(yaxis_title='Månedlig lånekostnad (NOK)')
-            # st.plotly_chart(fig_bar)
             
             # Display the table in an expandable section
             with st.expander("Vis detaljert tabell"):
