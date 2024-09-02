@@ -1,12 +1,15 @@
-[constants]
+[general]
 APP_TITLE = "Finn ut hva boligen din *egentlig* vil koste deg"
+
+[house_price]
 HOUSEPRICE_SLIDER_LABEL = "Hvilket prisintervall kjøper du/dere bolig i? (kr):"
 HOUSEPRICE_MIN = 1000000
 HOUSEPRICE_MAX = 15000000
 HOUSEPRICE_DEFAULT = [3500000, 5000000]
 HOUSEPRICE_STEP = 100000
 
-AMMORTISATION_PERIOD_LABEL = "Hva er tilbakebetalingstiden på lånet? (måneder):"
+[loan]
+AMMORTISATION_PERIOD_LABEL = "Hva er tilbakebetalingstiden på lånet? (i måneder):"
 AMMORTISATION_PERIOD_MIN = 1
 AMMORTISATION_PERIOD_MAX = 480
 AMMORTISATION_PERIOD_DEFAULT = 360
@@ -15,15 +18,17 @@ EK_LABEL = "Hvor mye egenkapital har du/dere?"
 EK_DEFAULT = 1500000
 EK_STEP = 5000
 
+[interest_rate]
 INTEREST_RATE_SLIDER_LABEL = "Hva slags renteintervall ønsker du å beregne lånekostnader for? (%):"
 INTEREST_RATE_MIN = 0.0
 INTEREST_RATE_MAX = 20.0
-INTEREST_RATE_DEFAULT = [1.0, 5.0]
+INTEREST_RATE_DEFAULT = [2.0, 5.0]
 INTEREST_RATE_STEP = 0.1
 
-ELPRICE_SLIDER_LABEL = "Anngi intervall for strømpris (kr/kWh):"
+[electricity]
+ELPRICE_SLIDER_LABEL = "Anngi gjennomsnitlig spotpris  (kr/kWh):"
 ELPRICE_MIN = 0.5
-ELPRICE_MAX = 5.0
+ELPRICE_MAX = 10.0
 ELPRICE_DEFAULT = 1.3
 ELPRICE_STEP = 0.1
 
@@ -33,11 +38,37 @@ KWH_USAGE_MAX = 30000
 KWH_USAGE_DEFAULT = [8000, 15000]
 KWH_USAGE_STEP = 100
 
+KWH_USAGE_RANGE_LABEL = "Velg intervall for strømforbruk (kWh):"
+KWH_USAGE_RANGE_MIN = 100
+KWH_USAGE_RANGE_MAX = 5000
+KWH_USAGE_RANGE_DEFAULT = [500, 1000]
+KWH_USAGE_RANGE_STEP = 100
+
+KWH_PRICE_RANGE_LABEL = "Velg intervall for spotpris (kr/kWh):"
+KWH_PRICE_RANGE_MIN = 0.1
+KWH_PRICE_RANGE_MAX = 10.0
+KWH_PRICE_RANGE_DEFAULT = [1.0, 2.0]
+KWH_PRICE_RANGE_STEP = 0.1
+
+MARKUP_NOK_LABEL = "Påslag per kWh (kr):"
+MARKUP_NOK_DEFAULT = 0.1
+MARKUP_NOK_MIN = 0.0
+MARKUP_NOK_MAX = 1.0
+MARKUP_NOK_STEP = 0.01
+
+FIXED_COST_ELECTRICITY_LABEL = "Fastprisledd (kr):"
+FIXED_COST_ELECTRICITY_DEFAULT = 39
+FIXED_COST_ELECTRICITY_MIN = 0
+FIXED_COST_ELECTRICITY_MAX = 500
+FIXED_COST_ELECTRICITY_STEP = 1
+
+[ownership]
 OWNERSHIP_FRAQ_SLIDER_LABEL = "Hvordan splitter dere eierskapet i eiendommen? (%):"
 OWNERSHIP_FRAQ_MIN = 0
 OWNERSHIP_FRAQ_MAX = 100
 OWNERSHIP_FRAQ_DEFAULT = 50
 
+[fixed_costs]
 FIXED_COST_HOUSE_LABEL = "Hva er eiendommens faste kostnader? (kr/måned):"
 FIXED_COST_HOUSE_DEFAULT = 5000
 FIXED_COST_HOUSE_STEP = 100
@@ -50,6 +81,7 @@ PERSON_B_FIXED_COSTS_LABEL = "Faste kostnader for person B (kr/måned):"
 PERSON_B_FIXED_COSTS_DEFAULT = 10000
 PERSON_B_FIXED_COSTS_STEP = 100
 
+[transaction_costs]
 TRANSACTION_COSTS_LABEL = "Hva er transaksjonskonstnadene til boligen (dokumentavgift m.m.)?"
 TRANSACTION_COSTS_DEFAULT = 200000
 TRANSACTION_COSTS_STEP = 1000
