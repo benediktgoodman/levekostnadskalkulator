@@ -1,9 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sun May 21 19:00:25 2023
+Created on Mon Sep  2 2024
 
 @author: Benedikt Goodman
 """
+
+from pathlib import Path
+import sys
+
+project_root = Path(__file__).resolve().parent.parent
+sys.path.append(str(project_root))
 
 import pandas as pd
 import numpy as np

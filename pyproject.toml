@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "Boligpriskalkulatoren"
+version = "0.1.0"
+description = "A streamlit app for calulcating costs related to house purchases"
+authors = ["Benedikt Goodman <bgoodman@runbox.no>"]
+license = "MIT"
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pandas = "^2.2.2"
+streamlit = "^1.38.0"
+plotly = "^5.24.0"
+numpy = "^2.1.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
