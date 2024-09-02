@@ -30,12 +30,11 @@ st.title("Hva vil lånet ditt egentlig koste deg i måneden?")
 st.write("""
 🏠💸 Forstå boliglånet ditt bedre!
 
-📊 Se hvordan renten påvirker månedlige kostnader
-🎢 Utforsk ulike rentescenarioer - fra lav til høy
-💡 Få innsikt i hvordan økonomiske svingninger påvirker deg
+- 📊 Se hvordan renten påvirker månedlige kostnader
+- 🎢 Utforsk ulike rentescenarioer - fra lav til høy
+- 💡 Få innsikt i hvordan økonomiske svingninger påvirker deg
 
 Husk: Selv små renteendringer kan ha stor effekt på lommeboken din! 💰
-
 """)
 
 # Cache functions that should be used

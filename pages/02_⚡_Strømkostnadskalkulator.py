@@ -45,9 +45,11 @@ st.write("""
 🔌 Estimer månedlige kostnader
 🇳🇴 Inkluderer norsk strømstøtte
 
-Slik gjør du det:
+Slik gjør du det:\n
 1️⃣ Juster sliderne for forbruk og priser
+
 2️⃣ Se hvordan valgene påvirker totalkostnaden
+
 3️⃣ Klikk "Beregn kostnader" for resultatet
 
 """)

@@ -25,7 +25,7 @@ def main():
 - 👫 Beregn kostnader for deg og partneren
 - 🎨 Se alt i fargerike, interaktive diagrammer
 
-🚀 Klar for å dykke inn? Let's go!
+🚀 Klar for å dykke inn?
 """)
 
 

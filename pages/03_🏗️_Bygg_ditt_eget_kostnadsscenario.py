@@ -124,7 +124,7 @@ with st.container():
 with st.container():
     st.subheader("Strøm")
     kwh_usage_range = st.slider(
-        variables["electricity"]["KWH_USAGE_RANGE_LABEL"],
+        "Angi månedlig strømforbruk (kwh)",
         min_value=variables["electricity"]["KWH_USAGE_RANGE_MIN"],
         max_value=variables["electricity"]["KWH_USAGE_RANGE_MAX"],
         value=variables["electricity"]["KWH_USAGE_RANGE_DEFAULT"][0],
@@ -133,7 +133,7 @@ with st.container():
     )
 
     kwh_price_range = st.slider(
-        variables["electricity"]["KWH_PRICE_RANGE_LABEL"],
+        "Angi gjennomsnittlig spotpris (kr/kwh)",
         min_value=variables["electricity"]["KWH_PRICE_RANGE_MIN"],
         max_value=variables["electricity"]["KWH_PRICE_RANGE_MAX"],
         value=variables["electricity"]["KWH_PRICE_RANGE_DEFAULT"][0],
