@@ -10,28 +10,73 @@ import numpy as np
 
 from itertools import product
 
-def calculate_amortization_schedule(loan_amount, annual_interest_rate, loan_term_months):
+
+def calculate_amortization_schedule(
+    loan_amount: float, annual_interest_rate: float, loan_term_months: int
+):
+    """Calculate the amortization schedule for a loan.
+
+    Parameters
+    ----------
+    loan_amount : float
+        The total amount of the loan.
+    annual_interest_rate : float
+        The annual interest rate of the loan.
+    loan_term_months : int
+        The number of months the loan will be amortized over.
+
+    Returns
+    -------
+    pd.DataFrame
+        A dataframe containing the amortization schedule, with the following columns:
+        - Month: The current month of the loan term.
+        - Payment: The monthly payment amount.
+        - Principal: The amount of the monthly payment that goes towards the principal.
+        - Interest: The amount of the monthly payment that goes towards interest.
+        - Remaining Balance: The remaining balance of the loan after the current month's payment.
+
+    Examples
+    --------
+    >>> calculate_amortization_schedule(100000, 0.05, 360)
+       Month   Payment  Principal  Interest  Remaining Balance
+    0      1  536.8820  133.3333   403.5487          99866.6667
+    1      2  536.8820  133.7734   403.1086          99732.8933
+    2      3  536.8820  134.2146   402.6674          99598.6787
+    ...
+    """
     monthly_rate = annual_interest_rate / 12
-    monthly_payment = loan_amount * (monthly_rate * (1 + monthly_rate) ** loan_term_months) / ((1 + monthly_rate) ** loan_term_months - 1)
-    
+    monthly_payment = (
+        loan_amount
+        * (monthly_rate * (1 + monthly_rate) ** loan_term_months)
+        / ((1 + monthly_rate) ** loan_term_months - 1)
+    )
+
     remaining_balance = loan_amount
     schedule = []
-    
+
     for month in range(1, loan_term_months + 1):
         interest_payment = remaining_balance * monthly_rate
         principal_payment = monthly_payment - interest_payment
         remaining_balance -= principal_payment
-        
-        schedule.append({
-            'Month': month,
-            'Payment': monthly_payment,
-            'Principal': principal_payment,
-            'Interest': interest_payment,
-            'Remaining Balance': remaining_balance
-        })
-    
+
+        schedule.append(
+            {
+                "Month": month,
+                "Payment": monthly_payment,
+                "Principal": principal_payment,
+                "Interest": interest_payment,
+                "Remaining Balance": remaining_balance,
+            }
+        )
+
     return pd.DataFrame(schedule)
-def calculate_govt_support(kwh_usage: int|float, kwh_price_incl_vat_nok: int|float, govt_support_limit_nok: float=0.9125):
+
+
+def calculate_govt_support(
+    kwh_usage: int | float,
+    kwh_price_incl_vat_nok: int | float,
+    govt_support_limit_nok: float = 0.9125,
+):
     """
     Calculate the government support for electricity usage based on usage, price, and the support limit.
 
@@ -55,10 +100,13 @@ def calculate_govt_support(kwh_usage: int|float, kwh_price_incl_vat_nok: int|flo
     4.725
     """
     if kwh_usage <= 5000:
-        govt_support = (kwh_usage * (kwh_price_incl_vat_nok - govt_support_limit_nok)) * 0.9
+        govt_support = (
+            kwh_usage * (kwh_price_incl_vat_nok - govt_support_limit_nok)
+        ) * 0.9
     else:
         govt_support = 0
     return govt_support
+
 
 def calculate_electricity_costs(
     kwh_usage: int,
@@ -103,16 +151,19 @@ def calculate_electricity_costs(
 
     # Calculates amount of support, which is 0.9 times the difference between the support limit
     # and price
-    govt_support_amount = calculate_govt_support(kwh_usage, kwh_price_incl_vat_nok, govt_support_limit_nok)
+    govt_support_amount = calculate_govt_support(
+        kwh_usage, kwh_price_incl_vat_nok, govt_support_limit_nok
+    )
 
     return costs - govt_support_amount
 
+
 def scenario_analysis_electricity_costs(
-    kwh_usage_range: np.ndarray, 
+    kwh_usage_range: np.ndarray,
     kwh_price_range: np.ndarray,
     markup_nok: float,
     fixed_cost_nok: float,
-    govt_support_limit_nok: float = 0.9125
+    govt_support_limit_nok: float = 0.9125,
 ) -> pd.DataFrame:
     """
     Generate scenarios for different electricity usages and prices, calculating the total cost for each.
@@ -146,17 +197,19 @@ def scenario_analysis_electricity_costs(
                 kwh_usage, kwh_price, markup_nok, fixed_cost_nok, govt_support_limit_nok
             )
             # Append each scenario's result to the list
-            scenarios.append({
-                "kWh Usage": kwh_usage,
-                "kWh Price (NOK)": kwh_price,
-                "Total Cost (NOK)": total_cost
-            })
+            scenarios.append(
+                {
+                    "kWh Usage": kwh_usage,
+                    "kWh Price (NOK)": kwh_price,
+                    "Total Cost (NOK)": total_cost,
+                }
+            )
 
     # Convert the list of dictionaries to a DataFrame for easier analysis and visualization
     return pd.DataFrame(scenarios)
 
 
-#@validate_call(config=dict(arbitrary_types_allowed=True))
+# @validate_call(config=dict(arbitrary_types_allowed=True))
 def loan_calc(
     loan: int | float, rate: float | np.ndarray, months: int
 ) -> int | np.ndarray:
@@ -185,8 +238,10 @@ def loan_calc(
     return (rate / 12) * (1 / (1 - (1 + rate / 12) ** (-months))) * loan
 
 
-#@validate_call(config=dict(arbitrary_types_allowed=True))
-def interest_rate_sensitivity(houseprice_nok: int , interest_rate_range: np.ndarray, ammortisation_periods: int) -> pd.DataFrame:
+# @validate_call(config=dict(arbitrary_types_allowed=True))
+def interest_rate_sensitivity(
+    houseprice_nok: int, interest_rate_range: np.ndarray, ammortisation_periods: int
+) -> pd.DataFrame:
     """
     Calculate the monthly loan cost for a range of interest rates and amortization periods.
 
@@ -203,7 +258,7 @@ def interest_rate_sensitivity(houseprice_nok: int , interest_rate_range: np.ndar
     -------
     pd.DataFrame
         A pandas DataFrame containing the monthly loan cost and corresponding interest rate.
-  
+
     Examples
     --------
     >>> interest_rate_range = np.arange(0.01, 0.06, 0.01)
@@ -217,11 +272,11 @@ def interest_rate_sensitivity(houseprice_nok: int , interest_rate_range: np.ndar
     """
     df = pd.DataFrame()
     # Calculates monthly loan calc function in listcomp, then turns it into a pandas series
-    df['Månedlig lånekostnad'] = pd.Series(
+    df["Månedlig lånekostnad"] = pd.Series(
         loan_calc(houseprice_nok, interest_rate_range, ammortisation_periods)
-        ).round(0)
-    df['Rentesats'] = pd.Series(interest_rate_range)
-    
+    ).round(0)
+    df["Rentesats"] = pd.Series(interest_rate_range)
+
     return df
 
 
@@ -326,6 +381,7 @@ def monthly_price_calculator(
 
     return df
 
+
 def monthly_price_calculator_scenarios(
     houseprice_range: list,
     interest_rate_range: list,
@@ -381,20 +437,42 @@ def monthly_price_calculator_scenarios(
         A DataFrame containing all the scenarios and their respective calculations.
     """
     # Generate all combinations of input parameters
-    all_combinations = list(product(
-        houseprice_range, interest_rate_range, fixed_cost_house_range, kwh_usage_range,
-        kwh_price_range, markup_nok_range, fixed_cost_electricity_range, 
-        ammortisation_periods_range, person_a_fixed_costs_range, person_b_fixed_costs_range, 
-        transaction_costs_range, ek_range, ownership_fraq_range
-    ))
-    
+    all_combinations = list(
+        product(
+            houseprice_range,
+            interest_rate_range,
+            fixed_cost_house_range,
+            kwh_usage_range,
+            kwh_price_range,
+            markup_nok_range,
+            fixed_cost_electricity_range,
+            ammortisation_periods_range,
+            person_a_fixed_costs_range,
+            person_b_fixed_costs_range,
+            transaction_costs_range,
+            ek_range,
+            ownership_fraq_range,
+        )
+    )
+
     results = []
 
     # Process each combination of parameters
-    for (house_price, interest_rate, fixed_cost_house, kwh_usage, kwh_price, markup_nok,
-         fixed_cost_electricity, ammortisation_periods, person_a_fixed_costs, person_b_fixed_costs, 
-         transaction_costs, ek, ownership_fraq) in all_combinations:
-        
+    for (
+        house_price,
+        interest_rate,
+        fixed_cost_house,
+        kwh_usage,
+        kwh_price,
+        markup_nok,
+        fixed_cost_electricity,
+        ammortisation_periods,
+        person_a_fixed_costs,
+        person_b_fixed_costs,
+        transaction_costs,
+        ek,
+        ownership_fraq,
+    ) in all_combinations:
         # Calculate effective equity after transaction costs
         eff_ek = ek - transaction_costs
         # Calculate loan amount
@@ -409,33 +487,43 @@ def monthly_price_calculator_scenarios(
         )
 
         # Calculate ownership shares
-        a_share = (monthly_loan_payment * ownership_fraq) + (el_cost / 2) + (fixed_cost_house / 2)
-        b_share = (monthly_loan_payment * (1 - ownership_fraq)) + (el_cost / 2) + (fixed_cost_house / 2)
+        a_share = (
+            (monthly_loan_payment * ownership_fraq)
+            + (el_cost / 2)
+            + (fixed_cost_house / 2)
+        )
+        b_share = (
+            (monthly_loan_payment * (1 - ownership_fraq))
+            + (el_cost / 2)
+            + (fixed_cost_house / 2)
+        )
 
         # Sum up total costs per person
         a_total = a_share + person_a_fixed_costs
         b_total = b_share + person_b_fixed_costs
 
         # Append the results to the list
-        results.append({
-            "house_price": house_price,
-            "interest_rate": interest_rate,
-            "fixed_cost_house": fixed_cost_house,
-            "kwh_usage": kwh_usage,
-            "kwh_price": kwh_price,
-            "markup_nok": markup_nok,
-            "fixed_cost_electricity": fixed_cost_electricity,
-            "el_cost": el_cost,
-            "ammortisation_periods": ammortisation_periods,
-            "person_a_fixed_costs": person_a_fixed_costs,
-            "person_b_fixed_costs": person_b_fixed_costs,
-            "transaction_costs": transaction_costs,
-            "ek": ek,
-            "ownership_fraq": ownership_fraq,
-            "monthly_loan_payment": monthly_loan_payment,
-            "a_total": a_total,
-            "b_total": b_total
-        })
+        results.append(
+            {
+                "house_price": house_price,
+                "interest_rate": interest_rate,
+                "fixed_cost_house": fixed_cost_house,
+                "kwh_usage": kwh_usage,
+                "kwh_price": kwh_price,
+                "markup_nok": markup_nok,
+                "fixed_cost_electricity": fixed_cost_electricity,
+                "el_cost": el_cost,
+                "ammortisation_periods": ammortisation_periods,
+                "person_a_fixed_costs": person_a_fixed_costs,
+                "person_b_fixed_costs": person_b_fixed_costs,
+                "transaction_costs": transaction_costs,
+                "ek": ek,
+                "ownership_fraq": ownership_fraq,
+                "monthly_loan_payment": monthly_loan_payment,
+                "a_total": a_total,
+                "b_total": b_total,
+            }
+        )
 
     # Convert the list of dictionaries to a DataFrame
     results_df = pd.DataFrame(results)
