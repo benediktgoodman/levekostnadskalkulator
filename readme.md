@@ -20,6 +20,7 @@ Boligkostnadskalkulatoren is a comprehensive web application designed to help us
 - Streamlit
 - Pandas
 - NumPy
+- NumPy-Financial
 - Plotly
 
 ## Installation
