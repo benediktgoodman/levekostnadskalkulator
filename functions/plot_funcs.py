@@ -40,7 +40,7 @@ def create_interest_rate_sensitivity_chart(loan_amount: float, periods: int, int
        A Plotly figure object representing the interest rate sensitivity chart.
    """
    interest_rates = np.arange(interest_rate_range[0], interest_rate_range[1] + 0.1, 0.25)
-   monthly_payments = [loan_calc(loan_amount, rate/100, periods) for rate in interest_rates]
+   monthly_payments = loan_calc(loan_amount, interest_rates/100, periods)
   
    fig = go.Figure()
    fig.add_trace(go.Scatter(
@@ -223,3 +223,45 @@ def create_heatmap_divergent_hover(df: pd.DataFrame, x_column: str, y_column: st
    )
 
    return fig
+
+
+def create_amortization_chart_optimized(schedule: pd.DataFrame, title: str) -> go.Figure:
+    """
+    Create an optimized amortization chart using Plotly.
+
+    Args:
+    schedule (Dict[str, Any]): A dictionary containing the amortization schedule data.
+    title (str): The title of the chart.
+
+    Returns:
+    go.Figure: A Plotly figure object representing the amortization chart.
+    """
+    # Convert schedule data to numpy arrays for faster operations
+    months = np.array(schedule['Month'])
+    remaining_balance = np.array(schedule['Remaining Balance'])
+    principal = np.array(schedule['Principal'])
+    interest = np.array(schedule['Interest'])
+
+    # Pre-compute cumulative sums
+    cumulative_principal = np.cumsum(principal)
+    cumulative_interest = np.cumsum(interest)
+
+    # Create figure with all traces at once
+    fig = go.Figure()
+    fig.add_traces([
+        go.Scatter(x=months, y=remaining_balance, name="Gjenstående saldo"),
+        go.Scatter(x=months, y=cumulative_principal, name="Kumulativt avdrag"),
+        go.Scatter(x=months, y=cumulative_interest, name="Kumulative renter")
+    ])
+
+    # Set layout parameters all at once
+    fig.update_layout(
+        title=title,
+        xaxis_title="Måned",
+        yaxis_title="Beløp (NOK)",
+        legend=dict(x=0, y=1, traceorder="normal"),
+        template=template,  # Assuming you're using a template
+        hovermode="x unified"
+    )
+
+    return fig
