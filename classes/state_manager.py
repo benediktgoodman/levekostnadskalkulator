@@ -13,6 +13,7 @@ sys.path.append(str(project_root))
 
 from functions.calc_funcs import calculate_amortization_schedule  # noqa: E402
 
+
 class ScenarioState(BaseModel):
     """
     A class used to represent the state of the scenario builder page.
@@ -59,12 +60,17 @@ class ScenarioState(BaseModel):
     update(filtered_df, selected_house_price, ek, ammortisation_periods)
         Updates the state of the scenario based on new data
     """
+
     class Config:
         arbitrary_types_allowed = True
-    
+
     df: Optional[pd.DataFrame] = None
-    selected_house_price: Optional[Union[float, int, np.floating, np.integer]] = Field(None, ge=0)
-    selected_interest_rate: Optional[Union[float, int, np.floating, np.integer]] = Field(None, ge=0, le=1)
+    selected_house_price: Optional[Union[float, int, np.floating, np.integer]] = Field(
+        None, ge=0
+    )
+    selected_interest_rate: Optional[Union[float, int, np.floating, np.integer]] = (
+        Field(None, ge=0, le=1)
+    )
     total_loan: Union[float, int, np.floating, np.integer] = Field(0, ge=0)
     monthly_payment: Union[float, int, np.floating, np.integer] = Field(0, ge=0)
     total_interest: Union[float, int, np.floating, np.integer] = Field(0, ge=0)
@@ -79,10 +85,14 @@ class ScenarioState(BaseModel):
     schedule_b: Optional[pd.DataFrame] = None
     calculation_done: bool = False
 
-
-
-    @validate_call(config=dict(arbitrary_types_allowed = True))
-    def update(self, filtered_df: pd.DataFrame, selected_house_price: float, ek: float, ammortisation_periods: int):
+    @validate_call(config=dict(arbitrary_types_allowed=True))
+    def update(
+        self,
+        filtered_df: pd.DataFrame,
+        selected_house_price: float|int,
+        ek: float|int,
+        ammortisation_periods: int|float,
+    ):
         """
         Updates the state of the scenario based on new data.
 
@@ -97,14 +107,15 @@ class ScenarioState(BaseModel):
         ammortisation_periods : int
             the number of periods over which the loan will be amortized
         """
-        
+
         if not self.selected_interest_rate:
             raise ValueError("Interest rate must be provided to update the scenario")
-        
 
         self.total_loan = selected_house_price - ek
         self.monthly_payment = filtered_df["monthly_loan_payment"].iloc[0]
-        self.total_interest = self.monthly_payment * ammortisation_periods - self.total_loan
+        self.total_interest = (
+            self.monthly_payment * ammortisation_periods - self.total_loan
+        )
         self.loan_to_value = (self.total_loan / selected_house_price) * 100
         self.total_cost_a = filtered_df["a_total"].iloc[0]
         self.total_cost_b = filtered_df["b_total"].iloc[0]
@@ -112,7 +123,7 @@ class ScenarioState(BaseModel):
         self.ownership_fraq = filtered_df["ownership_fraq"].iloc[0]
         self.loan_amount_a = self.loan_amount * self.ownership_fraq
         self.loan_amount_b = self.loan_amount * (1 - self.ownership_fraq)
-    
+
         # Assume calculate_amortization_schedule is imported or defined elsewhere
         self.schedule_a = calculate_amortization_schedule(
             self.loan_amount_a, self.selected_interest_rate, ammortisation_periods
