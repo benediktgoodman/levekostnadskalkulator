@@ -16,6 +16,7 @@ import numpy as np
 project_root = Path(__file__).resolve().parent.parent
 sys.path.append(str(project_root))
 
+from classes.state_manager import ScenarioState
 
 from functions.calc_funcs import (  # noqa: E402
     monthly_price_calculator_scenarios,
@@ -29,6 +30,10 @@ from functions.plot_funcs import (  # noqa: E402
     create_interest_rate_sensitivity_chart,
     create_amortization_chart,
 )
+
+# Initialize session state
+if 'scenario_state' not in st.session_state:
+    st.session_state.scenario_state = ScenarioState()
 
 # Load constants from variables.toml
 variables = toml.load(project_root.joinpath("variables.toml"))
@@ -215,185 +220,155 @@ def calculate_scenarios(
 
 
 # Button to perform calculation
-if st.button("Beregn scenario"):
-    # Calculate and store results
-    st.session_state.df = calculate_scenarios(
-        houseprice_range,
-        interest_rates_decimal,
-        fixed_cost_house,
-        kwh_usage_range,
-        kwh_price_range,
-        markup_nok,
-        fixed_cost_electricity,
-        ammortisation_periods,
-        person_a_fixed_costs,
-        person_b_fixed_costs,
-        transaction_costs,
-        ek,
-        ownership_fraq,
+if st.button('Beregn scenario'):
+    df = calculate_scenarios(
+        houseprice_range, interest_rates_decimal, fixed_cost_house, kwh_usage_range, kwh_price_range, 
+        markup_nok, fixed_cost_electricity, ammortisation_periods, person_a_fixed_costs, 
+        person_b_fixed_costs, transaction_costs, ek, ownership_fraq
     )
-
-    # Display results
-    if st.session_state.df is not None:
-        st.subheader("Resultater")
-
-        # Filters for sunburst charts
-        col1, col2 = st.columns(2)
-        with col1:
-            selected_house_price = st.selectbox(
-                "Velg boligpris", st.session_state.df["house_price"].unique()
-            )
-        with col2:
-            formatted_rates = [
-                format_interest_rate(rate)
-                for rate in st.session_state.df["interest_rate"].unique()
-            ]
-            selected_interest_rate_str = st.selectbox("Velg rentesats", formatted_rates)
-            selected_interest_rate = round(
-                float(selected_interest_rate_str.strip("%")) / 100, 5
-            )
-
-        filtered_df = st.session_state.df[
-            (st.session_state.df["house_price"] == selected_house_price)
-            & (st.session_state.df["interest_rate"] == selected_interest_rate)
+    if df is not None:
+        st.session_state.scenario_state.df = df
+        st.session_state.scenario_state.selected_house_price = df["house_price"].unique()[0]
+        st.session_state.scenario_state.selected_interest_rate = df["interest_rate"].unique()[0]
+        
+        filtered_df = df[
+            (df["house_price"] == st.session_state.scenario_state.selected_house_price)
+            & (df["interest_rate"] == st.session_state.scenario_state.selected_interest_rate)
         ]
+        st.session_state.scenario_state.update(filtered_df, st.session_state.scenario_state.selected_house_price, ek, ammortisation_periods)
 
-        # Summary Dashboard
-        st.subheader("Sammendrag")
-        col1, col2, col3, col4 = st.columns(4)
 
-        total_loan = selected_house_price - ek
-        monthly_payment = filtered_df["monthly_loan_payment"].iloc[0]
-        total_interest = monthly_payment * ammortisation_periods - total_loan
-        loan_to_value = (total_loan / selected_house_price) * 100
+# Display results
+if st.session_state.scenario_state.calculation_done:
+    st.subheader("Resultater")
 
-        col1.metric(
-            "Totalt lån",
-            f"{total_loan:,.0f} kr",
-            help="Det totale lånebeløpet etter fratrekk av egenkapital",
+    # Filters for sunburst charts
+    col1, col2 = st.columns(2)
+    with col1:
+        st.session_state.scenario_state.selected_house_price = st.selectbox(
+            "Velg boligpris",
+            st.session_state.scenario_state.df["house_price"].unique(),
+            index=list(st.session_state.scenario_state.df["house_price"].unique()).index(st.session_state.scenario_state.selected_house_price)
         )
-        col2.metric(
-            "Månedlig betaling",
-            f"{monthly_payment:,.0f} kr",
-            help="Den totale månedlige betalingen inkludert renter og avdrag",
+    with col2:
+        formatted_rates = [format_interest_rate(rate) for rate in st.session_state.scenario_state.df["interest_rate"].unique()]
+        selected_interest_rate_str = st.selectbox(
+            "Velg rentesats",
+            formatted_rates,
+            index=formatted_rates.index(format_interest_rate(st.session_state.scenario_state.selected_interest_rate))
         )
-        col3.metric(
-            "Total rentebelastning",
-            f"{total_interest:,.0f} kr",
-            help="Totalt rentebeløp som betales over hele lånets løpetid",
+        st.session_state.scenario_state.selected_interest_rate = round(float(selected_interest_rate_str.strip('%')) / 100, 5)
+
+    # Re-filter the DataFrame and update state based on new selections
+    filtered_df = st.session_state.scenario_state.df[
+        (st.session_state.scenario_state.df["house_price"] == st.session_state.scenario_state.selected_house_price)
+        & (st.session_state.scenario_state.df["interest_rate"] == st.session_state.scenario_state.selected_interest_rate)
+    ]
+    st.session_state.scenario_state.update(filtered_df, st.session_state.scenario_state.selected_house_price, ek, ammortisation_periods)
+
+    # Summary Dashboard
+    st.subheader("Sammendrag")
+    col1, col2, col3, col4 = st.columns(4)
+    
+    col1.metric(
+        "Totalt lån",
+        f"{st.session_state.scenario_state.total_loan:,.0f} kr",
+        help="Det totale lånebeløpet etter fratrekk av egenkapital"
+    )
+    col2.metric(
+        "Månedlig betaling",
+        f"{st.session_state.scenario_state.monthly_payment:,.0f} kr",
+        help="Den totale månedlige betalingen inkludert renter og avdrag"
+    )
+    col3.metric(
+        "Total rentebelastning",
+        f"{st.session_state.scenario_state.total_interest:,.0f} kr",
+        help="Totalt rentebeløp som betales over hele lånets løpetid"
+    )
+    col4.metric(
+        "Belåningsgrad",
+        f"{st.session_state.scenario_state.loan_to_value:.1f}%",
+        help="Forholdet mellom lånebeløp og boligens verdi, uttrykt som en prosentandel"
+    )
+    
+    # Cost Breakdown
+    st.subheader("Kostnadsanalyse")
+    st.write("""
+    Disse diagrammene viser hvordan de totale månedlige kostnadene er fordelt mellom 
+    ulike kategorier for hver person. Dette inkluderer boliglån, faste boligkostnader, 
+    strømutgifter og andre personlige utgifter.
+    """)
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.metric(
+            label="Person A: Total månedlig kostnad",
+            value=f"{st.session_state.scenario_state.total_cost_a:.2f} kr",
+            help="Den totale månedlige kostnaden for Person A, inkludert lån, strøm, og andre faste kostnader"
         )
-        col4.metric(
-            "Belåningsgrad",
-            f"{loan_to_value:.1f}%",
-            help="Forholdet mellom lånebeløp og boligens verdi, uttrykt som en prosentandel",
+        
+        fig_a = create_cost_breakdown_sunburst(filtered_df, 'A')
+        st.plotly_chart(fig_a, use_container_width=True)
+
+    with col2:
+        st.metric(
+            label="Person B: Total månedlig kostnad",
+            value=f"{st.session_state.scenario_state.total_cost_b:.2f} kr",
+            help="Den totale månedlige kostnaden for Person B, inkludert lån, strøm, og andre faste kostnader"
         )
+        
+        fig_b = create_cost_breakdown_sunburst(filtered_df, 'B')
+        st.plotly_chart(fig_b, use_container_width=True)
 
-        # Cost Breakdown
-        st.subheader("Kostnadsanalyse")
-        st.write("""
-        Disse diagrammene viser hvordan de totale månedlige kostnadene er fordelt mellom 
-        ulike kategorier for hver person. Dette inkluderer boliglån, faste boligkostnader, 
-        strømutgifter og andre personlige utgifter.
-        """)
+    # Interest Rate Sensitivity
+    st.subheader("Rentesensitivitetsanalyse")
+    st.write("""
+    Disse grafene viser hvordan den månedlige lånebetalingen endrer seg med 
+    ulike rentesatser for hver person. Kort sagt viser de hvordan 
+    renteendringer påvirker dine månedlige utgifter.
+    """)
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        fig_sensitivity_a = create_interest_rate_sensitivity_chart(st.session_state.scenario_state.loan_amount_a, ammortisation_periods, interest_rate_range)
+        fig_sensitivity_a.update_layout(title='Person A: Månedlig lånekostnad vs. Rentesats')
+        st.plotly_chart(fig_sensitivity_a, use_container_width=True)
 
-        # Create two columns for side-by-side sunburst charts and metric boxes
-        col1, col2 = st.columns(2)
+    with col2:
+        fig_sensitivity_b = create_interest_rate_sensitivity_chart(st.session_state.scenario_state.loan_amount_b, ammortisation_periods, interest_rate_range)
+        fig_sensitivity_b.update_layout(title='Person B: Månedlig lånekostnad vs. Rentesats')
+        st.plotly_chart(fig_sensitivity_b, use_container_width=True)
+    
+    # Amortization Schedule
+    st.subheader("Nedbetalingsplan")
+    st.write("""
+    Disse grafene viser hvordan lånebalansen, kumulative avdrag og kumulative 
+    renter endrer seg over tid for hver person. Dette gir deg en oversikt over 
+    hvordan lånet vil bli nedbetalt gjennom hele låneperioden.
+    """)
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        fig_a = create_amortization_chart(st.session_state.scenario_state.schedule_a, "Person A")
+        st.plotly_chart(fig_a, use_container_width=True)
 
-        with col1:
-            # Metric box for Person A
-            total_cost_a = filtered_df["a_total"].iloc[0]
-            st.metric(
-                label="Person A: Total månedlig kostnad",
-                value=f"{total_cost_a:.2f} kr",
-                help="Den totale månedlige kostnaden for Person A, inkludert lån, strøm, og andre faste kostnader",
-            )
+    with col2:
+        fig_b = create_amortization_chart(st.session_state.scenario_state.schedule_b, "Person B")
+        st.plotly_chart(fig_b, use_container_width=True)
 
-            fig_a = create_cost_breakdown_sunburst(filtered_df, "A")
-            st.plotly_chart(fig_a, use_container_width=True)
+    # Data display and download options
+    st.subheader("Data og eksport")
+    data_option = st.selectbox("Velg datavisning", ["Vis data", "Last ned data"])
 
-        with col2:
-            # Metric box for Person B
-            total_cost_b = filtered_df["b_total"].iloc[0]
-            st.metric(
-                label="Person B: Total månedlig kostnad",
-                value=f"{total_cost_b:.2f} kr",
-                help="Den totale månedlige kostnaden for Person B, inkludert lån, strøm, og andre faste kostnader",
-            )
-
-            fig_b = create_cost_breakdown_sunburst(filtered_df, "B")
-            st.plotly_chart(fig_b, use_container_width=True)
-
-        loan_amount = selected_house_price - ek
-        ownership_fraq = filtered_df["ownership_fraq"].iloc[0]
-
-        # Interest Rate Sensitivity
-        st.subheader("Rentesensitivitetsanalyse")
-        st.write("""
-        Disse grafene viser hvordan den månedlige lånebetalingen endrer seg med 
-        ulike rentesatser for hver person. Kort sagt viser de hvordan 
-        renteendringer påvirker dine månedlige utgifter.
-        """)
-
-        col1, col2 = st.columns(2)
-        with col1:
-            fig_sensitivity_a = create_interest_rate_sensitivity_chart(
-                loan_amount * ownership_fraq, ammortisation_periods, interest_rate_range
-            )
-            fig_sensitivity_a.update_layout(
-                title="Person A: Månedlig lånekostnad vs. Rentesats"
-            )
-            st.plotly_chart(fig_sensitivity_a, use_container_width=True)
-
-        with col2:
-            fig_sensitivity_b = create_interest_rate_sensitivity_chart(
-                loan_amount * (1 - ownership_fraq),
-                ammortisation_periods,
-                interest_rate_range,
-            )
-            fig_sensitivity_b.update_layout(
-                title="Person B: Månedlig lånekostnad vs. Rentesats"
-            )
-            st.plotly_chart(fig_sensitivity_b, use_container_width=True)
-
-        loan_amount_a = loan_amount * ownership_fraq
-        loan_amount_b = loan_amount * (1 - ownership_fraq)
-
-        schedule_a = calculate_amortization_schedule(
-            loan_amount_a, selected_interest_rate, ammortisation_periods
+    if data_option == "Vis data":
+        st.dataframe(st.session_state.scenario_state.df)
+    elif data_option == "Last ned data":
+        csv = st.session_state.scenario_state.df.to_csv(index=False).encode('utf-8')
+        st.download_button(
+            label="Last ned CSV",
+            data=csv,
+            file_name="kostnadsscenario_data.csv",
+            mime="text/csv",
         )
-        schedule_b = calculate_amortization_schedule(
-            loan_amount_b, selected_interest_rate, ammortisation_periods
-        )
-
-        # Amortization Schedule
-        st.subheader("Nedbetalingsplan")
-        st.write("""
-        Disse grafene viser hvordan lånebalansen, kumulative avdrag og kumulative 
-        renter endrer seg over tid for hver person. Dette gir deg en oversikt over 
-        hvordan lånet vil bli nedbetalt gjennom hele låneperioden.
-        """)
-
-        col1, col2 = st.columns(2)
-
-        with col1:
-            fig_a = create_amortization_chart(schedule_a, "Person A")
-            st.plotly_chart(fig_a, use_container_width=True)
-
-        with col2:
-            fig_b = create_amortization_chart(schedule_b, "Person B")
-            st.plotly_chart(fig_b, use_container_width=True)
-
-        # Data display and download options
-        st.subheader("Data og eksport")
-        data_option = st.selectbox("Velg datavisning", ["Vis data", "Last ned data"])
-
-        if data_option == "Vis data":
-            st.dataframe(st.session_state.df)
-        elif data_option == "Last ned data":
-            csv = st.session_state.df.to_csv(index=False).encode("utf-8")
-            st.download_button(
-                label="Last ned CSV",
-                data=csv,
-                file_name="kostnadsscenario_data.csv",
-                mime="text/csv",
-            )
