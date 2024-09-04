@@ -55,21 +55,6 @@ def create_sample_data():
         ownership_fraq_range=[0.5]
     )
     
-    # # Sample row for sunburst chart
-    # sunburst_data = df.iloc[0]
-    
-    # # Prepare data for cost breakdown sunburst
-    # sunburst_data = pd.DataFrame({
-    #     'kategori': ['Boligkostnader', 'Boligkostnader', 'Boligkostnader', 'Personlige kostnader'],
-    #     'underkategori': ['Lånebetaling', 'Faste boligkostnader', 'Strøm', 'Andre faste kostnader'],
-    #     'verdi': [
-    #         sample_row['monthly_loan_payment'] * sample_row['ownership_fraq'],
-    #         sample_row['fixed_cost_house'] / 2,
-    #         sample_row['el_cost'] / 2,
-    #         sample_row['person_a_fixed_costs']
-    #     ]
-    # })
-    
     # Data for interest rate sensitivity chart
     loan_amount = sunburst_data['house_price'] - 1500000  # Assuming ek is 1500000
     amortization_periods = 360
