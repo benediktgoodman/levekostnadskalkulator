@@ -51,6 +51,16 @@ def calculate_amortization_schedule(
     2      3  536.8820  134.2146   402.6674          99598.6787
     ...
     """
+    if isinstance(loan_amount, pd.Series):
+        loan_amount = loan_amount.copy().values.item()
+    elif isinstance(loan_amount, np.ndarray):
+        loan_amount = loan_amount.copy().item()
+        
+    if isinstance(annual_interest_rate, pd.Series):
+        annual_interest_rate = annual_interest_rate.copy().values.item()
+    elif isinstance(annual_interest_rate, np.ndarray):
+        annual_interest_rate = annual_interest_rate.copy().item()
+    
     monthly_rate = annual_interest_rate / 12
     monthly_payment = npf.pmt(monthly_rate, loan_term_months, -loan_amount)
 
@@ -207,7 +217,6 @@ def scenario_analysis_electricity_costs(
     return pd.DataFrame(scenarios)
 
 
-# @validate_call(config=dict(arbitrary_types_allowed=True))
 def loan_calc(
     loan: int | float, rate: float | np.ndarray, months: int
 ) -> int | np.ndarray:
@@ -236,7 +245,7 @@ def loan_calc(
     return (rate / 12) * (1 / (1 - (1 + rate / 12) ** (-months))) * loan
 
 
-# @validate_call(config=dict(arbitrary_types_allowed=True))
+
 def interest_rate_sensitivity(
     houseprice_nok: int, interest_rate_range: np.ndarray, ammortisation_periods: int
 ) -> pd.DataFrame:
