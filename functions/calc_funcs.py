@@ -7,15 +7,15 @@ Created on Mon Sep  2 2024
 
 from pathlib import Path
 import sys
+import pandas as pd  
+import numpy as np  
+import numpy_financial as npf  
+from itertools import product
 
 project_root = Path(__file__).resolve().parent.parent
 sys.path.append(str(project_root))
 
-import pandas as pd
-import numpy as np
-import numpy_financial as npf
 
-from itertools import product
 
 
 def calculate_amortization_schedule(
@@ -218,31 +218,54 @@ def scenario_analysis_electricity_costs(
 
 
 def loan_calc(
-    loan: int | float, rate: float | np.ndarray, months: int
-) -> int | np.ndarray:
+    loan: np.ndarray | float, rate: np.ndarray | float, months: int
+) -> np.ndarray | float:
     """
-    Calculate the monthly payment for a given loan amount with a given interest rate over a specified number of months.
+    Calculate the monthly payment for given loan amounts with given interest rates over a specified number of months.
+    Supports broadcasting between loan amounts and interest rates.
 
     Parameters
     ----------
-    loan : float
-        The loan amount.
-    rate : float
-        The annual interest rate.
+    loan : np.ndarray or float
+        The loan amount(s).
+    rate : np.ndarray or float
+        The annual interest rate(s).
     months : int
-        The number of months over which the loan will be amortized.
+        The number of months over which the loan(s) will be amortized.
 
     Returns
     -------
-    float or np.ndarray
-        The monthly payment.
+    np.ndarray or float
+        The monthly payment(s) for each combination of loan and rate.
 
     Examples
     --------
     >>> loan_calc(100000, 0.035, 360)
     448.64
+    >>> loan_calc(np.array([100000, 200000]), np.array([0.035, 0.04]), 360)
+    array([[448.64, 477.42],
+           [897.28, 954.83]])
+    >>> loan_calc(np.array([100000, 200000, 300000]), 0.035, 360)
+    array([448.64, 897.28, 1345.92])
     """
-    return (rate / 12) * (1 / (1 - (1 + rate / 12) ** (-months))) * loan
+    loan = np.atleast_1d(loan)[:, np.newaxis]
+    rate = np.atleast_1d(rate)[np.newaxis, :]
+    
+    monthly_rate = rate / 12
+    numerator = monthly_rate * (1 + monthly_rate) ** months
+    denominator = (1 + monthly_rate) ** months - 1
+    
+    result = (numerator / denominator) * loan
+    
+    # If both inputs were scalars, return a scalar
+    if result.size == 1:
+        return result.item()
+    
+    # If one input was scalar and the other 1D, return 1D array
+    if result.shape[0] == 1 or result.shape[1] == 1:
+        return result.ravel()
+    
+    return result
 
 
 
