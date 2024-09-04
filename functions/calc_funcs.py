@@ -13,6 +13,7 @@ sys.path.append(str(project_root))
 
 import pandas as pd
 import numpy as np
+import numpy_financial as npf
 
 from itertools import product
 
@@ -51,31 +52,22 @@ def calculate_amortization_schedule(
     ...
     """
     monthly_rate = annual_interest_rate / 12
-    monthly_payment = (
-        loan_amount
-        * (monthly_rate * (1 + monthly_rate) ** loan_term_months)
-        / ((1 + monthly_rate) ** loan_term_months - 1)
-    )
+    monthly_payment = npf.pmt(monthly_rate, loan_term_months, -loan_amount)
 
-    remaining_balance = loan_amount
-    schedule = []
+    remaining_balance = np.full(loan_term_months, loan_amount)
+    interest_payment = remaining_balance * monthly_rate
+    principal_payment = monthly_payment - interest_payment
+    remaining_balance = np.cumsum(remaining_balance - principal_payment)
 
-    for month in range(1, loan_term_months + 1):
-        interest_payment = remaining_balance * monthly_rate
-        principal_payment = monthly_payment - interest_payment
-        remaining_balance -= principal_payment
+    schedule = pd.DataFrame({
+        "Month": np.arange(1, loan_term_months + 1),
+        "Payment": monthly_payment,
+        "Principal": principal_payment,
+        "Interest": interest_payment,
+        "Remaining Balance": remaining_balance,
+    })
 
-        schedule.append(
-            {
-                "Month": month,
-                "Payment": monthly_payment,
-                "Principal": principal_payment,
-                "Interest": interest_payment,
-                "Remaining Balance": remaining_balance,
-            }
-        )
-
-    return pd.DataFrame(schedule)
+    return schedule
 
 
 def calculate_govt_support(
