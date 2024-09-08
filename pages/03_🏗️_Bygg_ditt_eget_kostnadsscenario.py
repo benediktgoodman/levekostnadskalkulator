@@ -58,7 +58,7 @@ Perfekt for deg som:
 - 🤔 Vurderer boligkjøp solo
 - 👫 Planlegger kjøp med andre
 
-👉 Juster variablene og klikk "Beregn scenario" for å se din økonomiske fremtid!
+👉 Juster variablene og klikk "Beregn scenario" for å se din økonomiske fremtid!\n
 👉 Velg deretter boligpris og rentenivå du vi se resultater for
 
 """)
