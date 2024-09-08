@@ -9,17 +9,19 @@ import streamlit as st
 
 
 def main():
-    st.title("Velkommen til boligkostnadskalkulatoren")
+    st.title("Velkommen til levekostnadskalkulatoren")
     st.write("""
 🏠💰 Boligdrømmer? La oss snakke penger!
 
-🔮 Se inn i din økonomiske fremtid:
-- Hvor mye koster boligen egentlig?
-- Hva skjer når renten danser opp og ned?
+Dyrtiden preger oss alle. Derfor er det nå ekstra viktig å ta gode finansielle valg.
+
+🔮 Dette verkøyet hjelper deg å se inn i din økonomiske fremtid:
+- Hvor mye koster det egentlig i måneden å eie en gitt bolig?
+- Hva slags rentesvingninger tåler du?
 - Hvordan blir det når strømprisen øker?
 
 🛠️ Verktøykassen din for smart boligkjøp:
-- 📈 Se rentesvingningenes magi på lommeboken din
+- 📈 Se rentesvingningenes effekt på lommeboken din
 - 📊 Få full oversikt over alle kostnader
 - 🏘️ Utforsk ulike boligscenarier
 - 👫 Beregn kostnader for deg og partneren

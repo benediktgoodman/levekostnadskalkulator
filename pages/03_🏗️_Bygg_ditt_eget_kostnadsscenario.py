@@ -59,6 +59,8 @@ Perfekt for deg som:
 - 👫 Planlegger kjøp med andre
 
 👉 Juster variablene og klikk "Beregn scenario" for å se din økonomiske fremtid!
+👉 Velg deretter boligpris og rentenivå du vi se resultater for
+
 """)
 
 # Initialize session state
