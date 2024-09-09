@@ -152,3 +152,4 @@ cython_debug/
 #.idea/
 dev_scenariostate.ipynb
 dev_optimise_plots.ipynb
+*.ipynb
