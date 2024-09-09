@@ -133,16 +133,21 @@ def create_amortization_chart(schedule: pd.DataFrame, title: str) -> go.Figure:
    go.Figure
        A Plotly figure object representing the amortization chart.
    """
+   
    fig = go.Figure()
 
    fig.add_trace(
        go.Scatter(x=schedule['Month'], y=schedule['Remaining Balance'], name="Gjenstående saldo")
    )
    fig.add_trace(
-       go.Scatter(x=schedule['Month'], y=schedule['Principal'].cumsum(), name="Kumulativt avdrag")
+       go.Scatter(x=schedule['Month'], y=schedule['Principal'], name="Kumulativt avdrag")
    )
    fig.add_trace(
-       go.Scatter(x=schedule['Month'], y=schedule['Interest'].cumsum(), name="Kumulative renter")
+       go.Scatter(x=schedule['Month'], y=schedule['Interest'], name="Kumulative renter")
+   )
+   
+   fig.add_trace(
+       go.Scatter(x=schedule['Month'], y=schedule['Total Paid'], name="Kumulativ total")
    )
 
    fig.update_layout(

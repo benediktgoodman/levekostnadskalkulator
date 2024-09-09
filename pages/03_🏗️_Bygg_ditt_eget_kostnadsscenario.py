@@ -353,11 +353,21 @@ if st.session_state.scenario_state.calculation_done:
     col1, col2 = st.columns(2)
     
     with col1:
-        fig_a = create_amortization_chart(st.session_state.scenario_state.schedule_a, "Person A")
+        schedule_a = calculate_amortization_schedule(
+            st.session_state.scenario_state.loan_amount_a,
+            st.session_state.scenario_state.selected_interest_rate,
+            ammortisation_periods,
+            )
+        fig_a = create_amortization_chart(schedule_a, "Person A")
         st.plotly_chart(fig_a, use_container_width=True)
 
     with col2:
-        fig_b = create_amortization_chart(st.session_state.scenario_state.schedule_b, "Person B")
+        schedule_b = calculate_amortization_schedule(
+            st.session_state.scenario_state.loan_amount_b,
+            st.session_state.scenario_state.selected_interest_rate,
+            ammortisation_periods,
+            )
+        fig_b = create_amortization_chart(schedule_b, "Person B")
         st.plotly_chart(fig_b, use_container_width=True)
 
     # Data display and download options

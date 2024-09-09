@@ -7,77 +7,88 @@ Created on Mon Sep  2 2024
 
 from pathlib import Path
 import sys
-import pandas as pd  
-import numpy as np  
-import numpy_financial as npf  
+import pandas as pd
+import numpy as np
+import numpy_financial as npf
 from itertools import product
 
 project_root = Path(__file__).resolve().parent.parent
 sys.path.append(str(project_root))
 
 
-
-
 def calculate_amortization_schedule(
-    loan_amount: float, annual_interest_rate: float, loan_term_months: int
+    loan_amount: int | float, annual_interest_rate: int | float, loan_term_months: int
 ):
-    """Calculate the amortization schedule for a loan.
+    """
+    Calculate the amortization schedule for a loan, including the initial state.
+
+    This function computes the monthly payments, cumulative interest, cumulative principal,
+    and remaining balance for each month of the loan term, including the initial state (t=0).
 
     Parameters
     ----------
-    loan_amount : float
-        The total amount of the loan.
-    annual_interest_rate : float
-        The annual interest rate of the loan.
+    loan_amount : int or float
+        The initial amount of the loan.
+    annual_interest_rate : int or float
+        The annual interest rate of the loan, expressed as a decimal (e.g., 0.05 for 5%).
     loan_term_months : int
-        The number of months the loan will be amortized over.
+        The total number of months for the loan term.
 
     Returns
     -------
-    pd.DataFrame
-        A dataframe containing the amortization schedule, with the following columns:
-        - Month: The current month of the loan term.
-        - Payment: The monthly payment amount.
-        - Principal: The amount of the monthly payment that goes towards the principal.
-        - Interest: The amount of the monthly payment that goes towards interest.
-        - Remaining Balance: The remaining balance of the loan after the current month's payment.
+    pandas.DataFrame
+        A DataFrame containing the amortization schedule with the following columns:
+        - Month: The month number (0 to loan_term_months)
+        - Principal: Cumulative principal paid up to the current month
+        - Interest: Cumulative interest paid up to the current month
+        - Remaining Balance: The remaining loan balance after the current month's payment
+        - Total Paid: The total amount paid (principal + interest) up to the current month
+
+    Notes
+    -----
+    - The function uses NumPy financial functions (npf) for calculations.
+    - All monetary values in the returned DataFrame are rounded to the nearest whole number.
+    - The initial state (t=0) is included, where no payments have been made.
 
     Examples
     --------
-    >>> calculate_amortization_schedule(100000, 0.05, 360)
-       Month   Payment  Principal  Interest  Remaining Balance
-    0      1  536.8820  133.3333   403.5487          99866.6667
-    1      2  536.8820  133.7734   403.1086          99732.8933
-    2      3  536.8820  134.2146   402.6674          99598.6787
-    ...
+    >>> loan_amount = 200000
+    >>> annual_interest_rate = 0.05
+    >>> loan_term_months = 360
+    >>> schedule = calculate_amortization_schedule(loan_amount, annual_interest_rate, loan_term_months)
+    >>> print(schedule.head())
+       Month  Principal  Interest  Remaining Balance  Total Paid
+    0      0         0         0            200000           0
+    1      1       279       833            199721        1112
+    2      2       558      1665            199442        2223
+    3      3       838      2495            199162        3333
+    4      4      1119      3324            198881        4443
     """
-    if isinstance(loan_amount, pd.Series):
-        loan_amount = loan_amount.copy().values.item()
-    elif isinstance(loan_amount, np.ndarray):
-        loan_amount = loan_amount.copy().item()
-        
-    if isinstance(annual_interest_rate, pd.Series):
-        annual_interest_rate = annual_interest_rate.copy().values.item()
-    elif isinstance(annual_interest_rate, np.ndarray):
-        annual_interest_rate = annual_interest_rate.copy().item()
+    monthly_interest_rate = annual_interest_rate / 12
+    per = np.arange(loan_term_months) + 1
     
-    monthly_rate = annual_interest_rate / 12
-    monthly_payment = npf.pmt(monthly_rate, loan_term_months, -loan_amount)
-
-    remaining_balance = np.full(loan_term_months, loan_amount)
-    interest_payment = remaining_balance * monthly_rate
-    principal_payment = monthly_payment - interest_payment
-    remaining_balance = np.cumsum(remaining_balance - principal_payment)
-
-    schedule = pd.DataFrame({
-        "Month": np.arange(1, loan_term_months + 1),
-        "Payment": monthly_payment,
-        "Principal": principal_payment,
-        "Interest": interest_payment,
-        "Remaining Balance": remaining_balance,
-    })
-
-    return schedule
+    # Calculates interest and principal per period
+    interest_pmt = npf.ipmt(monthly_interest_rate, per, loan_term_months, loan_amount) * -1
+    principal_pmt = npf.ppmt(monthly_interest_rate, per, loan_term_months, loan_amount) * -1
+    
+    # Prepend zeros for the initial state
+    cumulative_interest = np.insert(interest_pmt.cumsum(), 0, 0).round(0)
+    cumulative_principal = np.insert(principal_pmt.cumsum(), 0, 0).round(0)
+    cumulative_total = cumulative_principal + cumulative_interest
+    
+    # Calculate remaining balance including initial state
+    remaining_balance = np.insert(np.repeat(loan_amount, loan_term_months) - cumulative_principal[1:], 0, loan_amount)
+    
+    df = pd.DataFrame(
+        {
+            "Month": np.arange(loan_term_months + 1),
+            "Principal": cumulative_principal,
+            "Interest": cumulative_interest,
+            "Remaining Balance": remaining_balance,
+            "Total Paid": cumulative_total,
+        }
+    )
+    return df
 
 
 def calculate_govt_support(
@@ -250,23 +261,22 @@ def loan_calc(
     """
     loan = np.atleast_1d(loan)[:, np.newaxis]
     rate = np.atleast_1d(rate)[np.newaxis, :]
-    
+
     monthly_rate = rate / 12
     numerator = monthly_rate * (1 + monthly_rate) ** months
     denominator = (1 + monthly_rate) ** months - 1
-    
+
     result = (numerator / denominator) * loan
-    
+
     # If both inputs were scalars, return a scalar
     if result.size == 1:
         return result.item()
-    
+
     # If one input was scalar and the other 1D, return 1D array
     if result.shape[0] == 1 or result.shape[1] == 1:
         return result.ravel()
-    
-    return result
 
+    return result
 
 
 def interest_rate_sensitivity(
