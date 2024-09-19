@@ -9,6 +9,7 @@ import streamlit as st
 
 
 def main():
+    st.set_page_config(layout="centered")
     st.title("Velkommen til levekostnadskalkulatoren")
     st.write("""
 🏠💰 Boligdrømmer? La oss snakke penger!
