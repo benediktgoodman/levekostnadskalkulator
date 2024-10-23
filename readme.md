@@ -63,10 +63,6 @@ Contributions to improve Boligkostnadskalkulatoren are welcome. Please feel free
 
 This project is licensed under the MIT License. See the LICENSE file for details.
 
-## Author
-
-Benedikt Goodman <goodmanbenedikt@gmail.com>
-
 ## Acknowledgements
 
 Special thanks to the developers of Python, Pandas, Numpy, Plotly and Streamlit
